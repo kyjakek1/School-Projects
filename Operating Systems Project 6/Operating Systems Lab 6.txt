@@ -1,0 +1,31 @@
+Purpose: To use pipe message exchange mechanisms among Unix/Linux processes.
+
+Assignment Part A.: Write C program with a source code in the file PipeRW.c, that works as follows:
+
+You run your program, call it Process A. Process A creates a pipe and two child processes, call them Process B and Process C. Those two processes will be executing only its parent’s code, i.e. there is no exec system call in PipeRW.c.
+Process B writes into the pipe the following character strings, one in each iteration: "001aaa", "002aaa", "003aaa", "004aaa", ... "009aaa", "010aaa", "011aaa", "012aaa", "013aaa", ... "019aaa", "020aaa", "021aaa",..., "030aaa", ...., "099aaa", "100aaa", ... , "401aaa", "402aaa", "403aaa" ,..., "500aaa". When done, i.e. after 500 iterations, Process B terminates.
+Process C writes into the pipe the following character strings (one by one, i.e. 3 characters at the time): "Ax0", "Bx0", "Cx0", ... "Yx0", "Zx0", "Ax1", "Bx1", "Cx1", ... "Zx1", ... "Ax9", "Bx9", .., "Zx9". When done, i.e. after 260 iterations, Process C terminates.
+Process A always attempts to read from the pipe 100 characters at a time and displays all characters read by each read system call on the screen in new row. After Processes B and C terminate and pipe is empty, Process A terminates. Note that Process A does not know a number of characters that will be written in the pipe by writing processes. Process A has to display, before it terminates, a number of issued read statements and a total number of characters read from the pipe.
+After putting each 100 of its strings in the pipe Process B sleeps for 0.1 sec, Process C sleeps for 0.3 seconds after putting each 60 of its strings in the pipe, while Process A sleeps for 0.2 sec after each 50 reads.
+
+In this assignment, only system calls you are allowed to use are fork, usleep, exit, read, write, close, and pipe, plus any means of displaying on the terminal. In particular do not use system calls dup or dup2, nor shared memory or semaphores.
+
+ 
+
+Assignment Part B.: Write C programs with source code in files PipeC.c, PipeR.c, PipeW1.c, and PipeW2.c, that work as follows:
+
+First you run the executable code of PipeC.c, call it Process A. Process A does following:
+ - creates a pipe
+
+ - creates a child process and it should get executable code of PipeW1.c; call it Process B,
+
+ - creates a child process and it should get executable code of PipeW2.c; call it Process C,
+
+ - creates a child process and it should get executable code of PipeR; call it Process D,
+
+ - and then Process A terminates.
+
+Process B behaves as Process B in Part A.
+Process C behaves as Process C in Part A.
+Process D behaves as Process A in point 4 of Assignment Part A.
+In this assignment, only system calls you are allowed to use are fork, exit, read, write, close, pipe, and any of exec system calls, and any means of displaying on the terminal. In particular do not use system calls dup or dup2, nor shared memory or semaphores.

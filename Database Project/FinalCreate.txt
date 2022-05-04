@@ -1,0 +1,274 @@
+--TABLE CREATION
+CREATE TABLE ABookInfo(
+ISBN CHAR(13) NOT NULL,
+Year INT,
+Genre VARCHAR(50),
+Title VARCHAR(50) NOT NULL,
+Time INT,
+Chapters INT,
+PRIMARY KEY(ISBN)
+);
+
+CREATE TABLE Artist (
+ID INT,
+Name VARCHAR(50),
+PRIMARY KEY(ID)
+);
+
+CREATE TABLE AudioBook(
+ID INT NOT NULL,
+Stock INT NOT NULL,
+License VARCHAR(30) NOT NULL,
+ISBN CHAR(13) NOT NULL,
+OrderNumber INT NOT NULL,
+AuthorID INT NOT NULL,
+PRIMARY KEY(ID),
+FOREIGN KEY(OrderNumber) REFERENCES Orders(Number),
+FOREIGN KEY(AuthorID) REFERENCES Person(ID),
+FOREIGN KEY(ISBN) REFERENCES PBookInfo(ISBN)
+);
+
+CREATE TABLE Borrows (
+PatronID INT NOT NULL,
+MediaID INT NOT NULL,
+BorrowDate DATE NOT NULL,
+DueDate DATE NOT NULL,
+PRIMARY KEY(PatronID, MediaID),
+FOREIGN KEY(PatronID) REFERENCES LibraryCard(ID)
+);
+
+CREATE TABLE DigitalAlbum(
+ID INT NOT NULL,
+Stock INT,
+Title VARCHAR(50) NOT NULL,
+Year INT,
+Length INT,
+Rating VARCHAR(15),
+License VARCHAR(30) NOT NULL,
+OrderNum INT,
+ArtistID INT,
+PRIMARY KEY(ID),
+FOREIGN KEY(OrderNum) REFERENCES Orders(Number),
+FOREIGN KEY(ArtistID) REFERENCES Artist(ID)
+);
+
+CREATE TABLE DigitalMovie(
+ID INT NOT NULL,
+Stock INT NOT NULL,
+License VARCHAR(30) NOT NULL,
+Year YEAR NOT NULL,
+Genre VARCHAR(30),
+Title VARCHAR(50) NOT NULL,
+Length INT,
+Rating VARCHAR(4),
+OrderNumber INT NOT NULL,
+DirectorID INT NOT NULL,
+PRIMARY KEY(ID),
+FOREIGN KEY(OrderNumber) REFERENCES Orders(Number),
+FOREIGN KEY(DirectorID) REFERENCES Person(ID)
+);
+
+CREATE TABLE Employee (
+SSN CHAR(9) NOT NULL,
+DOB DATE,
+PRIMARY KEY(SSN)
+);
+
+CREATE TABLE Feedback (
+ID INT NOT NULL,
+Comment VARCHAR(100) NULL,
+PatronID INT NOT NULL,
+PRIMARY KEY(ID),
+FOREIGN KEY(PatronID) REFERENCES LibraryCard(ID)
+);
+
+CREATE TABLE LibraryCard (
+ID INT NOT NULL,
+Login VARCHAR(20),
+Password VARCHAR(20),
+Address VARCHAR(30),
+PaymentInfo CHAR(16),
+PRIMARY KEY(ID)
+);
+
+CREATE TABLE Manages (
+ESSN CHAR(9) NOT NULL,
+CardID INT NOT NULL,
+PRIMARY KEY(ESSN, CardID),
+FOREIGN KEY(ESSN) REFERENCES Employee(SSN),
+FOREIGN KEY(CardID) REFERENCES LibraryCard(ID)
+);
+
+
+CREATE TABLE OrderedMedia (
+SKU INT NOT NULL,
+OrderID INT NOT NULL,
+MediaMedium VARCHAR(20),
+NumberOfCopies SMALLINT,
+PricePerCopy DECIMAL,
+MediaType VARCHAR(15),
+PRIMARY KEY(SKU, OrderID)
+FOREIGN KEY(OrderID) REFERENCES Orders(Number)
+);
+
+CREATE TABLE Orders (
+Number INT NOT NULL,
+Date DATE,
+ESSN INT,
+PRIMARY KEY(Number),
+FOREIGN KEY(ESSN) REFERENCES Person(ESSN)
+);
+
+CREATE TABLE PBookInfo(
+ISBN CHAR(13) NOT NULL,
+Year INT,
+Genre VARCHAR(50),
+Title VARCHAR(50) NOT NULL,
+Length INT,
+Chapters INT,
+PRIMARY KEY(ISBN)
+);
+
+CREATE TABLE Person (
+ID INT NOT NULL,
+Fname VARCHAR(15) NOT NULL,
+Lname VARCHAR(15) NOT NULL,
+PatronFlag BOOLEAN,
+CardID INT,
+ActorFlag BOOLEAN,
+AuthorFlag BOOLEAN,
+DirectorFlag BOOLEAN,
+EmployeeFlag BOOLEAN,
+ESSN CHAR(9),
+PRIMARY KEY(ID),
+FOREIGN KEY(CARDID) REFERENCES LibraryCard(ID),
+FOREIGN KEY(ESSN) REFERENCES Employee(ID)
+);
+
+CREATE TABLE PhysicalBook(
+ID INT NOT NULL,
+Stock INT NOT NULL,
+Location VARCHAR(30) NOT NULL,
+ISBN CHAR(13) NOT NULL,
+OrderNumber INT NOT NULL,
+AuthorID INT NOT NULL,
+PRIMARY KEY(ID),
+FOREIGN KEY(OrderNumber) REFERENCES Orders(Number),
+FOREIGN KEY(AuthorID) REFERENCES Person(ID),
+FOREIGN KEY(ISBN) REFERENCES PBookInfo(ISBN)
+);
+
+CREATE TABLE PhysicalDisc(
+ID INT NOT NULL,
+Stock INT,
+Title VARCHAR(50) NOT NULL,
+Year INT,
+Length INT,
+Rating VARCHAR(15),
+Location VARCHAR(30),
+OrderNum INT,
+ArtistID INT,
+PRIMARY KEY(ID),
+FOREIGN KEY(OrderNum) REFERENCES Orders(Number),
+FOREIGN KEY(ArtistID) REFERENCES Artist(ID)
+);
+
+CREATE TABLE PhysicalDVD(
+ID INT NOT NULL,
+Stock INT NOT NULL,
+Location VARCHAR(30) NOT NULL,
+Year YEAR NOT NULL,
+Genre VARCHAR(30),
+Title VARCHAR(50) NOT NULL,
+Length INT,
+Rating VARCHAR(4),
+OrderNumber INT NOT NULL,
+DirectorID INT NOT NULL,
+PRIMARY KEY(ID),
+FOREIGN KEY(OrderNumber) REFERENCES Orders(Number),
+FOREIGN KEY(DirectorID) REFERENCES Person(ID)
+);
+
+CREATE TABLE Preference (
+ID INT NOT NULL,
+FavoriteGenre VARCHAR(20),
+PatronID INT NOT NULL,
+PRIMARY KEY(ID),
+FOREIGN KEY(PatronID) REFERENCES LibraryCard(ID)
+);
+
+CREATE TABLE Starring(
+MovieID INT,
+ActorID INT,
+FOREIGN KEY(ActorID) REFERENCES Person(ID)
+);
+
+CREATE TABLE Track (
+ID INT,
+Title VARCHAR(50),
+Number SMALLINT,
+Genre VARCHAR(20),
+DiscID INT,
+AlbumID INT,
+PRIMARY KEY(ID)
+FOREIGN KEY(DiscID) REFERENCES PhysicalDisc(ID),
+FOREIGN KEY(AlbumID) REFERENCES DigitalAlbum(ID)
+);
+
+CREATE TABLE TurnsInto (
+OrderNum INT NOT NULL,
+SKU INT NOT NULL,
+MediaID INT NOT NULL,
+Shipping Date date,
+PRIMARY KEY(OrderNum, MediaID),
+FOREIGN KEY(OrderNum) REFERENCES Orders(Number),
+FOREIGN KEY(SKU) REFERENCES OrderedMedia(SKU)
+);
+
+pragma foreign_keys=0;
+
+--VIEW CREATION
+
+Select Artist.Name, COUNT(Artist.Name) AS AlbumsInHouse
+From Artist, PhysicalDisc
+Where Artist.ID = PhysicalDisc.ArtistID
+GROUP BY Artist.ID
+UNION
+Select Artist.Name, COUNT(Artist.Name) AS AlbumsInHouse
+From Artist, DigitalAlbum
+Where Artist.ID = DigitalAlbum.ArtistID
+GROUP BY Artist.ID
+ORDER BY Artist.Name;
+
+SELECT Person.FName, Person.LName, COUNT(Borrows.PatronID) AS ItemsCheckedOut
+FROM Borrows, LibraryCard, Person
+WHERE Borrows.PatronID = LibraryCard.ID
+AND Person.PatronFlag = TRUE
+AND Person.CardID = LibraryCard.ID
+Group by LibraryCard.ID
+ORDER BY ItemsCheckedOut DESC;
+
+--TRANSACTION CREATION
+
+BEGIN TRANSACTION;
+INSERT OR ROLLBACK INTO Employee
+ VALUES ('654893146', '03-01-2000');   
+UPDATE OR ROLLBACK Person
+SET EmployeeFlag = TRUE, ESSN = '654893146'
+WHERE Person.ID = 10;
+COMMIT;
+
+BEGIN TRANSACTION;
+    UPDATE OR ROLLBACK AudioBook
+    SET Stock = 5
+    WHERE AudioBook.ID = 72;
+COMMIT;
+
+BEGIN TRANSACTION;
+    UPDATE OR ROLLBACK LibraryCard
+    SET Password = 'ColoradoBlues'
+    Where ID = 10;
+COMMIT;
+
+
+
